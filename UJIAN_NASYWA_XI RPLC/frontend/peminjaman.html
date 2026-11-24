@@ -1,0 +1,360 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="./src/output.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+
+  <body class="bg-gray-300 text-gray-800">
+    <div id="aplikasiPeminjaman" class="block">
+      <header
+        class="fixed top-0 left-0 right-0 h-20 bg-pink-300 text-gray-800 shadow-md z-40 flex items-center justify-between px-4 md:px-7">
+        <h1 class="text-xl md:text-2xl font-bold">PEMINJAMAN ALAT</h1>
+        <div class="flex items-center gap-3"></div>
+
+      </header>
+
+      <aside class="fixed left-0 top-20 bottom-0 w-56 md:w-64 bg-gray-100 border-r-2 border-gray-400 z-30">
+
+
+        <a href="alat.html"
+          class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+          ALAT
+        </a>
+
+        <a href="kategori.html"
+          class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+          KATEGORI
+        </a>
+
+        <a href="peminjaman.html"
+          class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+          PEMINJAMAN
+        </a>
+      </aside>
+      <main class="ml-56 md:ml-64 pt-17 p-6 min-h-screen bg-gray-200">
+        <div id="isiHalamanPeminjaman" class="p-4 md:p-8">
+
+          <section class="pt-8">
+            <h1 class="text-3xl font-bold mb-6">Kelola Peminjaman</h1>
+
+            <a href="tambah-Peminjaman.html"
+              class="inline-block bg-pink-300 hover:bg-pink-300 px-5 py-3 rounded-lg shadow border font-bold text-gray-800">
+              Tambah Peminjaman
+            </a>
+
+            <div class="mt-6 rounded-lg overflow-x-auto">
+              <table class="w-full bg-white border-collapse border border-black-400">
+
+                <thead>
+                  <tr class="bg-pink-300">
+                    <th class="border p-3 text-center">No</th>
+                    <th class="border p-3 text-center">Nama Alat</th>
+                    <th class="border p-3 text-center">Nama Peminjam</th>
+                    <th class="border p-3 text-center">Kelas</th>
+                    <th class="border p-3 text-center">Tanggal Pinjam</th>
+                    <th class="border p-3 text-center">Tanggal Kembali</th>
+                    <th class="border p-3 text-center">Jumlah</th>
+                    <th class="border p-3 text-center">Status</th>
+                    <th class="border p-3 text-center">Aksi</th>
+                  </tr>
+                </thead>
+
+                <tbody id="peminjaman-list">
+                  <tr>
+                    <td colspan="9" class="py-4 px-6 text-center text-gray-500">
+                      Memuat data peminjaman...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+      </main>
+
+
+    <script>
+
+      let peminjaman = [];
+      // Daftar status peminjaman
+      const statusPeminjaman = [
+        "Dipinjam",
+        "Dikembalikan",
+        "Terlambat"
+      ];
+      // Fungsi memuat daftar peminjaman ke dalam tabel
+      async function loadPeminjaman() {
+        const peminjamanList = document.getElementById("peminjaman-list");
+
+        try {
+          const response = await fetch("http://localhost:3000/api/peminjaman");
+          if (!response.ok) {
+            throw new Error("Gagal mengambil data peminjaman");
+          }
+          const hasil = await response.json();
+          const result = hasil.data;
+
+          // Menyimpan data untuk fungsi edit
+          Peminjaman = result;
+          peminjamanList.innerHTML = "";
+
+          if (result && result.length > 0) {
+            let no = 1;
+
+            result.forEach((peminjaman) => {
+              peminjamanList.innerHTML += `
+                <tr class="hover:bg-gray-50 transition-colors border-b">
+                    <td class="py-4 px-6 border">${no++}</td>
+                    <td class="py-4 px-6 border">${peminjaman.nama_alat}</td>
+                    <td class="py-4 px-6 border">${peminjaman.nama_peminjam}</td>
+                    <td class="py-4 px-6 border">${peminjaman.kelas}</td>
+                    <td class="py-4 px-6 border">${peminjaman.tanggal_pinjam ? String(peminjaman.tanggal_pinjam).slice(0,10) : "-"}</td>
+                    <td class="py-4 px-6 border">${peminjaman.tanggal_kembali ? String(peminjaman.tanggal_kembali).slice(0,10) : "-"}</td>
+                    <td class="py-4 px-6 border">${peminjaman.jumlah}</td>
+                    <td class="py-4 px-6 border">${peminjaman.status}</td>
+                    <td class="py-4 px-6 border">
+                    <button onclick="editPeminjaman(${peminjaman.id_peminjaman})" class="bg-pink-300 hover:bg-pink-400 px-5 py-2 rounded">Edit</button>
+                    <button onclick="HapusPeminjaman(${peminjaman.id_peminjaman})" class="bg-pink-300 hover:bg-pink-400 px-5 py-2 rounded-lg">Hapus</button>
+                        </td>
+
+                    </tr>
+                `;
+            });
+
+          } else {
+            peminjamanList.innerHTML = `
+                <tr>
+                    <td colspan="9" class="py-4 text-center">
+                        Belum ada peminjaman.
+                    </td>
+                </tr>
+            `;
+          }
+
+        } catch (error) {
+          console.error("Error load peminjaman:", error);
+
+          peminjamanList.innerHTML = `
+            <tr>
+                <td colspan="9" class="py-4 text-center text-red-500">
+                    Koneksi backend terputus!
+                </td>
+            </tr>
+        `;
+        }
+      }
+
+      loadPeminjaman();
+
+      /* EDIT PEMINJAMAN */
+      async function editPeminjaman(id_peminjaman) {
+        let p = Peminjaman.find(function (peminjaman) {
+          return peminjaman.id_peminjaman == id_peminjaman;
+        });
+
+        if (!p) {
+          alert("Data peminjaman tidak ditemukan!");
+          return;
+        }
+
+        try {
+          let responseAlat = await fetch("http://localhost:3000/api/alat");
+
+          if (!responseAlat.ok) {
+            alert("Gagal mengambil data alat!");
+            return;
+          }
+
+          let hasilAlat = await responseAlat.json();
+
+          console.log("Data alat:", hasilAlat);
+
+          let daftarAlat = hasilAlat.data;
+
+          if (!daftarAlat) {
+            alert("Data alat tidak ditemukan!");
+            return;
+          }
+
+          let opsiNamaAlat = "";
+
+          daftarAlat.forEach(function (a) {
+            opsiNamaAlat += `
+                <option value="${a.id_alat}"
+                    ${a.id_alat == p.id_alat ? "selected" : ""}>
+                    ${a.nama_alat}
+                </option>
+            `;
+          });
+
+          let opsiStatus = "";
+
+          statusPeminjaman.forEach(function (s) {
+            opsiStatus += `
+                <option value="${s}"
+                    ${s == p.status ? "selected" : ""}>
+                    ${s}
+                </option>
+            `;
+          });
+
+          document.getElementById("isiHalamanPeminjaman").innerHTML = `
+            <section class= "pt-8">
+                <div class="bg-white w-full max-w-2xl p-6 md:p-8 shadow-lg rounded-xl">
+                    <h2 class="text-2xl font-bold mb-6">Edit Peminjaman</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="font-semibold">Nama Alat</label>
+                            <select id="nama_alat"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                                ${opsiNamaAlat}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-semibold">Nama Peminjam</label>
+                            <input id="nama_peminjam"
+                                value="${p.nama_peminjam}"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Kelas</label>
+                            <input id="kelas"
+                                value="${p.kelas}"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Tanggal Pinjam</label>
+                            <input id="tanggal_pinjam" type="date"
+                                value="${String(p.tanggal_pinjam).substring(0, 10)}" class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Tanggal Kembali</label>
+                            <input id="tanggal_kembali" type="date"
+                                value="${String(p.tanggal_kembali).substring(0, 10)}" class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Jumlah</label>
+                            <input id="jumlah" type="number"
+                                value="${p.jumlah}"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Status</label>
+                            <select id="status"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                                ${opsiStatus}
+                            </select>
+                        </div>
+                       <button onclick="location.reload()"
+                                class="bg-gray-300 px-5 py-2 rounded">
+                                Batal
+                            </button>
+                            <button onclick="simpanEditPeminjaman(${p.id_peminjaman})"
+                                class="bg-pink-300 hover:bg-pink-400 px-5 py-2 rounded font-bold">
+                                Simpan Perubahan
+                            </button>
+                        </div>
+            </section>
+        `;
+          window.scrollTo(0, 0);
+
+        } catch (error) {
+          console.error("ERROR EDIT PEMINJAMAN:", error);
+          alert("Terjadi kesalahan: " + error.message);
+        }
+      }
+
+
+      /* SIMPAN EDIT PEMINJAMAN */
+      async function simpanEditPeminjaman(id_peminjaman) {
+
+        let p = Peminjaman.find(function (peminjaman) {
+          return peminjaman.id_peminjaman == id_peminjaman;
+        });
+
+        if (!p) {
+          alert("Data peminjaman tidak ditemukan!");
+          return;
+        }
+
+        let data = {
+          id_alat: Number(document.getElementById("nama_alat").value),
+          nama_peminjam: document.getElementById("nama_peminjam").value,
+          kelas: document.getElementById("kelas").value,
+          tanggal_pinjam: document.getElementById("tanggal_pinjam").value,
+          tanggal_kembali: document.getElementById("tanggal_kembali").value,
+          jumlah: Number(document.getElementById("jumlah").value),
+          status: document.getElementById("status").value
+        };
+
+        try {
+
+          const response = await fetch(
+            `http://localhost:3000/api/peminjaman/${id_peminjaman}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(data)
+            }
+          );
+
+          if (response.ok) {
+
+            alert("Peminjaman berhasil diperbarui!");
+
+            location.reload();
+
+          } else {
+
+            const hasil = await response.json();
+
+            console.log(hasil);
+
+            alert("Gagal memperbarui peminjaman!");
+
+          }
+
+        } catch (error) {
+
+          console.log(error);
+
+          alert("Tidak dapat terhubung ke server!");
+
+        }
+      }
+
+// Menghapus data peminjaman
+      async function HapusPeminjaman(id_peminjaman) {
+    if (confirm("Yakin ingin menghapus peminjaman ini?")) {
+        try {
+            const response = await fetch(`http://localhost:3000/api/peminjaman/${id_peminjaman}`, {
+                method: "DELETE"
+            });
+
+            const hasil = await response.json();
+
+            if (response.ok) {
+                alert("Peminjaman berhasil dihapus");
+                loadPeminjaman();
+            } else {
+                alert(hasil.message);
+            }
+
+        } catch (error) {
+            console.error("Gagal menghapus peminjaman:", error);
+        }
+    }
+}
+
+    </script>
+  </body>
+
+</html>

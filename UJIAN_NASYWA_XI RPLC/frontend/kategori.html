@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+
+  <body class="bg-gray-300 text-gray-800">
+    <div id="aplikasiKategori" class="block">
+      <header
+        class="fixed top-0 left-0 right-0 h-20 bg-pink-300 text-gray-800 shadow-md z-40 flex items-center justify-between px-4 md:px-7">
+        <h1 class="text-xl md:text-2xl font-bold">PEMINJAMAN ALAT</h1>
+        <div class="flex items-center gap-3"></div>
+
+      </header>
+
+      <aside class="fixed left-0 top-20 bottom-0 w-56 md:w-64 bg-gray-100 border-r-2 border-gray-400 z-30">
+
+
+        <a href="alat.html"
+          class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+          ALAT
+        </a>
+
+        <a href="kategori.html"
+          class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+          KATEGORI
+        </a>
+
+        <a href="peminjaman.html"
+          class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+          PEMINJAMAN
+        </a>
+      </aside>
+      <main class="ml-56 md:ml-64 pt-17 p-6 min-h-screen bg-gray-200">
+        <div id="isiHalamanKategori_alat" class="p-4 md:p-8"></div>
+
+        <section>
+          <h1 class="text-3xl font-bold mb-6">Kelola Kategori</h1>
+          <div class="mt-6 rounded-lg overflow-x-auto">
+            <table class="w-full bg-white border-collapse border border-black-400">
+              <thead>
+                <tr class="bg-pink-300">
+                  <th class="border p-3 text-center">No</th>
+                  <th class="border p-3 text-center">Id Kategori</th>
+                  <th class="border p-3 text-center">Nama Kategori</th>
+                  <th class="border p-3 text-center">Deskripsi</th>
+                </tr>
+              </thead>
+              <tbody id="kategori-list">
+                <tr>
+                  <td colspan="4" class="py-4 px-6 text-center text-gray-500">Memuat data kategori...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+    </div>
+    </main>
+    </div>
+
+    <script>
+      // Fungsi memuat daftar kategori ke dalam tabel
+      async function loadKategori() {
+        const kategoriList = document.getElementById("kategori-list");
+
+        try {
+
+          const response = await fetch("http://localhost:3000/api/kategori_alat");
+          const result = (await response.json());
+
+          console.log(result)
+
+          // console.log(result);
+          // console.log(result[0]);
+          kategoriList.innerHTML = "";
+          if (result && result.length > 0) {
+            let no = 1;
+            result.forEach((kategori) => {
+              kategoriList.innerHTML += `
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="py-4 px-6">${no++}</td>
+
+                <td class="py-4 px-6">${kategori.id_kategori}</td>
+                <td class="py-4 px-6">${kategori.nama_kategori}</td>
+                <td class="py-4 px-6">${kategori.deskripsi}</td>
+            </tr>
+            `;
+            });
+          } else {
+            kategoriList.innerHTML = `<tr><td colspan="4" class="text-center">Belum ada kategori.</td></tr>`;
+          }
+        } catch (error) {
+          console.error(error)
+          document.getElementById("kategori-list").innerHTML = `<tr><td colspan="4" class="text-center text-red-500">Koneksi backend terputus!</td></tr>`;
+        }
+      }
+      loadKategori()
+
+    </script>
+  </body>
+
+</html>

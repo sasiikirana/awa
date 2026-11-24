@@ -1,0 +1,319 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="./src/output.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+
+  <body class="bg-gray-300 text-gray-800">
+    <div id="aplikasiAlat" class="block">
+      <header
+        class="fixed top-0 left-0 right-0 h-20 bg-pink-300 text-gray-800 shadow-md z-40 flex items-center justify-between px-4 md:px-7">
+        <h1 class="text-xl md:text-2xl font-bold">PEMINJAMAN ALAT</h1>
+        <div class="flex items-center gap-3"></div>
+
+      </header>
+
+      <aside class="fixed left-0 top-20 bottom-0 w-56 md:w-64 bg-gray-100 border-r-2 border-gray-400 z-30">
+
+
+        <a href="alat.html"
+          class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+          ALAT
+        </a>
+
+        <a href="kategori.html"
+          class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+          KATEGORI
+        </a>
+
+        <a href="peminjaman.html"
+          class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+          PEMINJAMAN
+        </a>
+      </aside>
+      <main class="ml-56 md:ml-64 pt-17 p-6 min-h-screen bg-gray-200">
+        <div id="isiHalamanAlat" class="p-4 md:p-8">
+
+        <section class ="pt-8">
+          <h1 class="text-3xl font-bold mb-6">Kelola Alat</h1>
+          <a href="tambah-alat.html"
+            class="inline-block bg-pink-300 hover:bg-pink-300 px-5 py-3 rounded-lg shadow border font-bold text-gray-800">Tambah
+            Alat</a>
+          <div class="mt-6 rounded-lg overflow-x-auto">
+            <table class="w-full bg-white border-collapse border border-black-400">
+              <thead>
+                <tr class="bg-pink-300">
+                  <th class="border p-3 text-center">No</th>
+                  <th class="border p-3 text-center">Nama Alat</th>
+                  <th class="border p-3 text-center">Kondisi</th>
+                  <th class="border p-3 text-center">Stok</th>
+                  <th class="border p-3 text-center">Lokasi</th>
+                  <th class="border p-3 text-center">Kategori</th>
+                  <th class="border p-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="alat-list">
+                <tr>
+                  <td colspan="4" class="py-4 px-6 text-center text-gray-500">Memuat data alat...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+    </div>
+    </main>
+
+    <script>
+       let Alat = [];
+      // Fungsi memuat daftar kategori ke dalam tabel
+      async function loadAlat() {
+        const alatList = document.getElementById("alat-list");
+
+        try {
+          const responseKategori = await fetch("http://localhost:3000/api/kategori_alat");
+          const resultKategori = (await responseKategori.json());
+
+          const response = await fetch("http://localhost:3000/api/alat");
+          const result = (await response.json()).data;
+          Alat = result;
+
+          // console.log(result);
+          // console.log(result[0]);
+          alatList.innerHTML = "";
+          if (result && result.length > 0) {
+            let no = 1;
+            result.forEach((alat) => {
+              alatList.innerHTML += `
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="py-4 px-6">${no++}</td>
+                <td class="py-4 px-6">${alat.nama_alat}</td>
+                <td class="py-4 px-6">${alat.kondisi}</td>
+                <td class="py-4 px-6">${alat.stok}</td>
+                <td class="py-4 px-6">${alat.lokasi}</td>
+                <td class="py-4 px-6">${resultKategori.find((kategori) => kategori.id_kategori === alat.id_kategori)?.nama_kategori ?? "-"}</td>
+                <td class="py-4 px-6">
+                <button class="bg-pink-300 hover:bg-pink-400 px-5 py-2 rounded-lg" onclick= "editAlat(${alat.id_alat})">Edit</button>
+                <button class="bg-pink-300 hover:bg-pink-400 px-5 py-2 rounded-lg" onclick= "hapusAlat(${alat.id_alat})">Hapus</button>
+                </td>
+            </tr>
+            `;
+            });
+          } else {
+            alatList.innerHTML = `<tr><td colspan="4" class="text-center">Belum ada kategori.</td></tr>`;
+          }
+        } catch (error) {
+          console.error(error)
+          document.getElementById("alat-list").innerHTML = `<tr><td colspan="4" class="text-center text-red-500">Koneksi backend terputus!</td></tr>`;
+        }
+      }
+      loadAlat()
+
+      /* EDIT ALAT */
+async function editAlat(id_alat) {
+
+    let a = Alat.find(function (alat) {
+        return alat.id_alat == id_alat;
+    });
+
+    if (!a) {
+        alert("Data alat tidak ditemukan!");
+        return;
+    }
+
+    let opsiNamaAlat = "";
+
+Alat.forEach(function (alat) {
+    opsiNamaAlat += `
+        <option value="${alat.nama_alat}"
+            ${alat.nama_alat == a.nama_alat ? "selected" : ""}>
+            ${alat.nama_alat}
+        </option>
+    `;
+});
+
+    try {
+
+        // Mengambil data kategori
+        const responseKategori = await fetch("http://localhost:3000/api/kategori_alat");
+        const hasilKategori = await responseKategori.json();
+
+        const daftarKategori = hasilKategori;
+        let opsiKategori = "";
+
+        daftarKategori.forEach(function (k) {
+            opsiKategori += `
+                <option value="${k.id_kategori}"
+                    ${k.id_kategori == a.id_kategori ? "selected" : ""}>
+                    ${k.nama_kategori}
+                </option>
+            `;
+        });
+
+        document.getElementById("isiHalamanAlat").innerHTML = `
+            <section class="pt-20">
+
+                <div class="bg-white w-full max-w-2xl p-6 md:p-8 shadow-lg rounded-xl">
+
+                    <h2 class="text-2xl font-bold mb-6">Edit Alat</h2>
+
+                    <div class="space-y-4">
+
+                        <div>
+                            <label class="mb-1 block font-medium">Nama Alat</label>
+                            <input type="text" id="nama_alat"
+                              value="${a.nama_alat}"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Kondisi</label>
+                            <input id="kondisi"
+                                value="${a.kondisi}"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Stok</label>
+                            <input id="stok" type="number"
+                                value="${a.stok}"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Lokasi</label>
+                            <input id="lokasi"
+                                value="${a.lokasi}"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+
+                        <div>
+                            <label class="font-semibold">Kategori</label>
+                            <select id="id_kategori"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                                ${opsiKategori}
+                            </select>
+                        </div>
+
+                        <div class="flex gap-3 mt-6">
+
+                            <button onclick="location.reload()"
+                                class="bg-gray-300 px-5 py-2 rounded">
+                                Batal
+                            </button>
+
+                            <button onclick="simpanEditAlat(${a.id_alat})"
+                                class="bg-pink-300 hover:bg-pink-400 px-5 py-2 rounded font-bold">
+                                Simpan Perubahan
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        `;
+        window.scrollTo(0, 0);
+
+    } catch (error) {
+
+        console.log(error);
+        alert("Terjadi kesalahan saat membuka halaman edit alat!");
+
+    }
+}
+
+
+/* SIMPAN EDIT ALAT */
+async function simpanEditAlat(id_alat) {
+
+    let a = Alat.find(function (alat) {
+        return alat.id_alat == id_alat;
+    });
+
+    if (!a) {
+        alert("Data alat tidak ditemukan!");
+        return;
+    }
+
+    let data = {
+
+        nama_alat: document.getElementById("nama_alat").value,
+        kondisi: document.getElementById("kondisi").value,
+        stok: Number(document.getElementById("stok").value),
+        lokasi: document.getElementById("lokasi").value,
+        id_kategori: Number(document.getElementById("id_kategori").value)
+
+    };
+
+    try {
+
+        const response = await fetch(
+            `http://localhost:3000/api/alat/${id_alat}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            }
+        );
+
+        if (response.ok) {
+
+            alert("Data alat berhasil diperbarui!");
+
+            location.reload();
+
+        } else {
+
+            const hasil = await response.json();
+
+            console.log(hasil);
+
+            alert("Gagal memperbarui data alat!");
+
+        }
+
+    } catch (error) {
+
+        console.log(error);
+
+        alert("Tidak dapat terhubung ke server!");
+
+    }
+}
+      // Menghapus data alat
+      async function hapusAlat(id_alat) {
+        if (confirm("Yakin ingin menghapus alat ini?")) {
+          try {
+            const response = await fetch(`http://localhost:3000/api/alat/${id_alat}`, {
+              method: "DELETE"
+            });
+
+            if (response.ok) {
+              alert("Data alat berhasil dihapus!");
+              loadAlat();
+            } else {
+              const result = await response.json();
+              console.log(result.message);
+              alert("Gagal menghapus alat karena ada riwayat peminjaman!");
+            }
+
+          } catch (error) {
+            console.error(error);
+            console.log(error.message);
+            alert("Koneksi backend bermasalah!");
+          }
+        }
+      }
+
+    </script>
+  </body>
+
+</html>

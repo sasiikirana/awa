@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tambah Peminjaman</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-300 text-gray-800">
+    <div id="aplikasiTambahPeminjaman class=" block">
+        <header
+            class="fixed top-0 left-0 right-0 h-20 bg-pink-300 text-black border-b-2 border-gray-900 z-40 flex items-center justify-between px-4 md:px-7">
+            <h1 class="text-xl md:text-2xl font-bold">PEMINJAMAN ALAT</h1>
+            <div class="flex items-center gap-3"></div>
+        </header>
+
+        <aside class="fixed left-0 top-20 bottom-0 w-56 md:w-64 bg-gray-100 border-r-2 border-gray-400 z-30">
+
+
+            <a href="alat.html"
+                class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+                ALAT
+            </a>
+
+            <a href="kategori.html"
+                class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+                KATEGORI
+            </a>
+
+            <a href="peminjaman.html"
+                class="flex items-center w-full h-14 md:h-16 text-sm md:text-lg border-b border-gray-400 hover:bg-pink-100 font-bold text-left px-6">
+                PEMINJAMAN
+            </a>
+        </aside>
+
+        <main class="ml-56 md:ml-64 pt-20 min-h-screen bg-gray-200">
+            <div id="isiHalamanPeminjaman" class="p-4 md:p-8">
+                <form id="form-Peminjaman">
+                    <div class="bg-white w-full max-w-2xl p-6 md:p-8 shadow-lg rounded-xl">
+                        <h2 class="text-2xl font-bold mb-6">Tambah Peminjaman</h2>
+
+                         <div class="mb-4">
+                            <label class="mb-1 block font-medium">Nama Alat</label>
+                            <select id="nama_alat"
+                                class="w-full rounded border border-gray-300 bg-white p-2 outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-300">
+                                <option value="" disabled selected hidden>Pilih Nama Alat</option>>
+                                <option value="1">Kabel UTP Cat6 (Roll)</option>
+                                <option value="2">Crimping Tool</option>
+                                <option value="3">Kamera DSLR Canon</option>
+                                <option value="4">Proyektor Epson</option>
+                                <option value="5">Multimeter Digital</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-semibold">Nama Peminjam</label>
+                            <input type="text" id="nama_peminjam"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Kelas</label>
+                            <input type="text" id="kelas"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Tanggal Pinjam</label>
+                            <input type="date" id="tanggal_pinjam"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Tanggal Kembali</label>
+                            <input type="date" id="tanggal_kembali"
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Jumlah</label>
+                            <input type="number" id="jumlah" name="jumlah" min="1" value="1" required
+                                class="w-full border border-gray-400 rounded px-4 py-3 mt-1">
+                        </div>
+                        <div class="mb-4">
+                            <label class="mb-1 block font-medium">Status</label>
+                            <select id="status"
+                                class="w-full rounded border border-gray-300 bg-white p-2 outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-300">
+                                <option value="" disabled selected hidden>Pilih Status</option>>
+                                <option value="Dipinjam">Dipinjam</option>
+                                <option value="Terlambat">Terlambat</option>
+                                <option value="Dikembalikan">Dikembalikan</option>
+                            </select>
+                        </div>
+
+                        <div id="message-area"></div>
+
+                        <div class="flex gap-3 mt-6">
+                            <button type="button" onclick="bukaHalamanData('peminjaman')"
+                                class="bg-gray-300 px-5 py-2 rounded">Batal</button>
+                            <button type="button"
+                            onclick="simpanPeminjaman()"
+                                class="bg-pink-300 hover:bg-pink-400 px-5 py-2 rounded font-bold">Simpan</button>
+                        </div>
+                    </form>
+                </main>
+
+ <script>
+
+    async function simpanPeminjaman() {
+
+    const dataPeminjaman = {
+    id_alat: document.getElementById("nama_alat").value,
+    nama_peminjam: document.getElementById("nama_peminjam").value.trim(),
+    kelas: document.getElementById("kelas").value.trim(),
+    tanggal_pinjam: document.getElementById("tanggal_pinjam").value,
+    tanggal_kembali: document.getElementById("tanggal_kembali").value || null,
+    status: "Dipinjam",
+    jumlah: Number(document.getElementById("jumlah").value),
+    status: document.getElementById("status").value
+};
+    if (!dataPeminjaman.id_alat) {
+        alert("Silakan pilih alat terlebih dahulu!");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:3000/api/peminjaman", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(dataPeminjaman)
+        });
+
+        const hasil = await response.json();
+
+        if (!response.ok) {
+            throw new Error(hasil.message);
+        }
+
+        alert(hasil.message);
+        window.location.href = "peminjaman.html";
+
+    } catch (error) {
+        alert("Gagal menyimpan peminjaman: " + error.message);
+        console.error(error);
+    }
+}
+
+async function loadAlat() {
+    try {
+        const response = await fetch("http://localhost:3000/api/alat");
+        const result = await response.json();
+
+        const pilihan = document.getElementById("id_alat");
+
+        pilihan.innerHTML = '<option value="">Pilih Nama Alat</option>';
+
+        result.data.forEach(alat => {
+            pilihan.innerHTML += `
+                <option value="${alat.id_alat}">
+                    ${alat.nama_alat}
+                </option>
+            `;
+        });
+
+    } catch (error) {
+        console.log("Gagal mengambil data alat:", error);
+    }
+}
+
+loadAlat();
+
+    </script>
+</body>
+</html>
